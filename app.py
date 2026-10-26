@@ -429,4 +429,76 @@ def page_rules() -> None:
         "- **CyberShield** is a SIEM-inspired learning and demonstration project.\n"
         "- It is **not** a production security monitoring system: no real-time collection, no user "
         "accounts, no tamper protection, and no tuning for a real environment.\n"
-        "- The sample data is simulat
+        "- The sample data is simulated. Real logs are noisier and larger.\n"
+        "- An IP address is an indicator, not proof of who did something. A private or unfamiliar "
+        "address is never treated as malicious by itself.\n"
+        "- Rules produce **false positives** (harmless activity flagged, like the backup script in the "
+        "sample data) and **false negatives** (real attacks missed)."
+    )
+
+
+# ----------------------------------------------------------------------
+# Main
+# ----------------------------------------------------------------------
+def main() -> None:
+    st.set_page_config(page_title="CyberShield", page_icon="🛡️", layout="wide")
+    st.markdown(CSS, unsafe_allow_html=True)
+    db = get_database()
+
+    st.sidebar.markdown(f'<div class="cs-header">{LOGO_SVG}<span class="cs-title">CyberShield</span></div>',
+                        unsafe_allow_html=True)
+    page = st.sidebar.radio("Navigation", PAGES, label_visibility="collapsed")
+    source = st.sidebar.radio("Data source", SOURCES)
+    st.sidebar.button("Reload data", help="Reads the selected data source again.")
+    config = detection_settings()
+
+    st.markdown(f'<div class="cs-header">{LOGO_SVG}<span class="cs-title">CyberShield</span></div>',
+                unsafe_allow_html=True)
+    st.caption("Intelligent threat detection and security monitoring dashboard. "
+               "A SIEM-inspired project that analyses authentication logs. All times are UTC.")
+
+    if page == "Rules & About":
+        render_database_panel(db, None, None)
+        page_rules()
+        return
+
+    uploaded = None
+    if source == SOURCES[1]:
+        uploaded = st.file_uploader("Upload an authentication log (.csv, up to 5 MB)", type=["csv"])
+    dataset = load_dataset(source, uploaded, db)
+    if dataset is None:
+        render_database_panel(db, None, None)
+        st.info("Choose a CSV file to begin. Open 'Data & Validation' to see the required format and get a template.")
+        return
+
+    if page == "Data & Validation":
+        render_database_panel(db, dataset, None)
+        page_validation(dataset)
+        return
+
+    if not dataset.result.ok:
+        render_database_panel(db, None, None)
+        for error in dataset.result.errors:
+            st.error(error)
+        st.info("Open 'Data & Validation' to see what went wrong and what the file should look like.")
+        return
+    if config is None:
+        st.error("Please fix the detection settings in the sidebar.")
+        return
+
+    events = dataset.result.events
+    alerts = d.detect_all(events, dataset.result.rejected, dataset.result.total_rows, config)
+    alerts = apply_status(db, alerts)
+    render_database_panel(db, dataset, alerts)
+
+    if page == "Overview":
+        page_overview(dataset, events, alerts)
+    elif page == "Alerts":
+        page_alerts(db, alerts)
+    elif page == "Events":
+        page_events(events)
+    elif page == "Reports":
+        page_reports(dataset, events, alerts, config)
+
+
+main()
