@@ -126,7 +126,7 @@ A production system would collect logs continuously from many sources, store the
 Per-user baselines, offline IP enrichment, user accounts with separate storage, notification export, PDF reports, evaluated anomaly detection once suitable labelled data exists.
 
 ## Author
-- Name: `<ANOOJ KRISHNA A K>`
-- Course: Diploma in Computer Engineering, `<GPC CHERTHALA>`
-- LinkedIn: `<https://www.linkedin.com/in/anooj-krishna-a-k-146038382?utm_source=share_via&utm_content=profile&utm_medium=member_android>`
-- Email: `<anoojkrishnaak@gmail.com>`
+- Name: ANOOJ KRISHNA A K
+- Course: Diploma in Computer Engineering,GPC CHERTHALA
+- LinkedIn: https://www.linkedin.com/in/anooj-krishna-a-k-146038382?utm_source=share_via&utm_content=profile&utm_medium=member_android
+- Email: anoojkrishnaak@gmail.com
